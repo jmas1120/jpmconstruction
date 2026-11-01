@@ -447,6 +447,23 @@ footer .word{width:min(1400px,120vw);margin:0 auto -4vw;opacity:.9;transform:rot
   .chalk{border-width:10px}
   .chalk .doodle{display:none}
   .hero h1{font-size:clamp(28px,8.5vw,40px)}
+  .brush .ballimg{width:110px;height:110px;left:2%;top:2%}
+}
+/* touch screens: the polaroid strip becomes a real swipe row */
+.hint .tap{display:none}
+@media (hover:none),(pointer:coarse){
+  .hint .hov{display:none}.hint .tap{display:inline}
+  .polas{width:auto;max-width:100%;overflow-x:auto;overflow-y:hidden;transform:none!important;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:34px 24px 60px;gap:18px;margin-top:40px;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
+  .polas::-webkit-scrollbar{display:none}
+  .pola{scroll-snap-align:center;width:min(300px,78vw);flex:0 0 auto}
+  .pola:after{content:"tap";position:absolute;right:22px;top:22px;font-family:var(--type);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--cream);background:rgba(10,11,9,.6);padding:3px 8px;border-radius:3px}
+  .pola:hover{transform:inherit;box-shadow:0 20px 50px -20px rgba(0,0,0,.8),0 2px 0 rgba(0,0,0,.2)}
+  .pola:hover .blurb{opacity:0}
+  .pola.open{transform:rotate(0) scale(1.02)!important;z-index:3}
+  .pola.open .blurb{opacity:1}
+  .pola.open:after{content:"tap to close"}
+  .pinned:hover{transform:inherit}
+  .screen,.board{transform:none}
 }
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}#loader{display:none}.hero .logo-hero,.hero h1,.hero .sub,.hero .ctas,.badge{opacity:1}}
 </style>
@@ -532,7 +549,7 @@ footer .word{width:min(1400px,120vw);margin:0 auto -4vw;opacity:.9;transform:rot
   <div class="wrap strip-head">
     <div><div class="chap">No. 02 — Pick a night</div>
       <h2 class="rv">Four ways to <em>spend a Tuesday.</em></h2></div>
-    <div class="hint rv d1">grab a photo, hover for the fine print →</div>
+    <div class="hint rv d1"><span class="hov">grab a photo, hover for the fine print →</span><span class="tap">swipe through, tap one for the fine print →</span></div>
   </div>
   <div class="polas" id="polas">
     <figure class="pola"><span class="pin"></span><img src="assets/photos/driver.jpg" alt=""><figcaption class="cap">Play <small>18 holes</small></figcaption><div class="blurb">Pebble, St Andrews, Sawgrass. Bucket-list tracks, no flight. Eighteen holes runs about an hour a player.</div></figure>
@@ -768,6 +785,7 @@ footer .word{width:min(1400px,120vw);margin:0 auto -4vw;opacity:.9;transform:rot
 <script>
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+const touch=matchMedia('(hover:none),(pointer:coarse)').matches;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 
 /* loader */
@@ -839,9 +857,10 @@ function frame(now){cx.clearRect(0,0,vw(),vh());
   requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
 
-/* polaroids drift with scroll */
+/* polaroids: drift with scroll on desktop, native swipe + tap on touch */
 const polas=$('#polas');
-if(!reduce){addEventListener('scroll',()=>{const r=polas.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;
+if(touch){$$('.pola').forEach(p=>p.addEventListener('click',()=>{const was=p.classList.contains('open');$$('.pola').forEach(x=>x.classList.remove('open'));if(!was)p.classList.add('open')}))}
+if(!reduce&&!touch){addEventListener('scroll',()=>{const r=polas.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;
   const p=1-(r.top+r.height/2)/innerHeight;const maxShift=Math.max(0,polas.scrollWidth-innerWidth+40);polas.style.transform=`translateX(${-Math.min(maxShift,Math.max(0,p*maxShift*1.1))}px)`},{passive:true})}
 
 /* courses */
